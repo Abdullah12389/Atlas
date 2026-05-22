@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import useViewModel from "../viewmodel/useViewModel";
 import { currencyVM } from "../viewmodel/currency.viewmodel";
+import { useReducer } from "react";
 
 export const CurrencyConverterView: React.FC = () => {
     // Reactively bind to currencyVM using custom hook
@@ -10,6 +11,10 @@ export const CurrencyConverterView: React.FC = () => {
         e.preventDefault();
         vm.convert();
     };
+    useEffect(() => {
+        currencyVM.extractCurrencies();
+    }, []);
+
 
     return (
         <div className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm text-left box-border">

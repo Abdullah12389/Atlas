@@ -16,22 +16,17 @@ class CurrencyViewModel {
     allCurrencies: { code: string; name: string; flag: string }[] = [];
 
     private subscribers = new Set<any>();
-
-    constructor() {
-        // Run extraction once repository is populated
-        this.extractCurrencies();
-    }
-
     /**
      * Extracts distinct currency codes, names, and representative flags from the country catalog.
      */
-    extractCurrencies() {
-        const countries = countryRepository.getCountries();
+    async extractCurrencies() {
+        const countries = await countryRepository.getCountries();
         const map = new Map<string, { code: string; name: string; flag: string }>();
 
         countries.forEach((country) => {
             if (country.currencies) {
                 Object.entries(country.currencies).forEach(([code, detail]) => {
+                    console.log(code)
                     const upperCode = code.toUpperCase();
                     if (!map.has(upperCode)) {
                         map.set(upperCode, {
@@ -45,6 +40,7 @@ class CurrencyViewModel {
         });
 
         this.allCurrencies = Array.from(map.values()).sort((a, b) => a.code.localeCompare(b.code));
+        this.notify();
     }
 
     setAmount(val: number | "") {
@@ -147,9 +143,15 @@ class CurrencyViewModel {
     }
 
     // Subscription pattern
-    subscribe(view: Component | any) {
-        this.subscribers.add(view);
-        return () => this.unsubscribe(view);
+    subscribe(callback: () => void): () => void {
+        console.log(callback)
+        this.subscribers.add(callback);
+
+        callback(); // initial sync render
+
+        return () => {
+            this.subscribers.delete(callback);
+        };
     }
 
     unsubscribe(view: Component | any) {
@@ -168,4 +170,3 @@ class CurrencyViewModel {
 }
 
 export const currencyVM = new CurrencyViewModel();
-export default currencyVM;
